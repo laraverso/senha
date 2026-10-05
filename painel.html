@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 36px;
+        }
+
+        .display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .numero {
+            font-size: 120px;
+            font-weight: 900;
+            margin: 20px 0;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .info-item {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .info-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .info-value {
+            font-size: 40px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .controles {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .controle {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .controle h3 {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-proximo {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-proximo:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-atualizar {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-atualizar:hover {
+            background: #5568d3;
+        }
+
+        .btn-reset {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #c82333;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .msg {
+            text-align: center;
+            padding: 15px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .msg.show {
+            display: block;
+        }
+
+        .tempo {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎫 Painel de Controle</h1>
+
+        <div class="msg" id="msg"></div>
+
+        <div class="display">
+            <div style="font-size: 18px; margin-bottom: 20px; text-transform: uppercase;">Atendendo</div>
+            <div class="numero" id="senhaAtual">000</div>
+        </div>
+
+        <div class="info">
+            <div class="info-item">
+                <div class="info-label">Próxima Senha</div>
+                <div class="info-value" id="proxSenha">000</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Na Fila</div>
+                <div class="info-value" id="naFila">0</div>
+            </div>
+        </div>
+
+        <div class="controles">
+            <div class="controle">
+                <h3>⬆️ Chamar Próximo</h3>
+                <button class="btn-proximo" onclick="chamarProximo()">PRÓXIMO</button>
+            </div>
+
+            <div class="controle">
+                <h3>✏️ Atualizar</h3>
+                <div class="input-group">
+                    <input type="number" id="inputSenha" placeholder="Nº" min="0" max="999">
+                    <button class="btn-atualizar" onclick="atualizar()" style="flex: 0.5;">OK</button>
+                </div>
+            </div>
+
+            <div class="controle">
+                <h3>🔄 Reset</h3>
+                <button class="btn-reset" onclick="resetar()">RESET</button>
+            </div>
+        </div>
+
+        <div class="tempo" id="tempo"></div>
+    </div>
+
+    <script>
+        // Dados compartilhados
+        let dados = {
+            senhaAtual: 0,
+            proxSenha: 0
+        };
+
+        function salvar() {
+            localStorage.setItem('dados', JSON.stringify(dados));
+            window.dispatchEvent(new Event('dadosAtualizados'));
+        }
+
+        function carregar() {
+            const saved = localStorage.getItem('dados');
+            if (saved) dados = JSON.parse(saved);
+        }
+
+        function chamarProximo() {
+            if (dados.proxSenha > dados.senhaAtual) {
+                dados.senhaAtual++;
+                salvar();
+                mostrarMsg('✓ Chamando: ' + String(dados.senhaAtual).padStart(3, '0'));
+                tocarSom();
+            }
+        }
+
+        function atualizar() {
+            const valor = parseInt(document.getElementById('inputSenha').value);
+            if (isNaN(valor) || valor < 0 || valor > 999) {
+                mostrarMsg('⚠️ Número inválido');
+                return;
+            }
+            dados.senhaAtual = valor;
+            document.getElementById('inputSenha').value = '';
+            salvar();
+            mostrarMsg('✓ Atualizado: ' + String(valor).padStart(3, '0'));
+        }
+
+        function resetar() {
+            if (confirm('Resetar sistema?')) {
+                if (confirm('Tem certeza? Vai zerar tudo!')) {
+                    dados.senhaAtual = 0;
+                    dados.proxSenha = 0;
+                    salvar();
+                    mostrarMsg('✓ Sistema resetado!');
+                }
+            }
+        }
+
+        function mostrarMsg(texto) {
+            const msg = document.getElementById('msg');
+            msg.textContent = texto;
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        }
+
+        function atualizar_tela() {
+            document.getElementById('senhaAtual').textContent = String(dados.senhaAtual).padStart(3, '0');
+            document.getElementById('proxSenha').textContent = String(dados.proxSenha).padStart(3, '0');
+            document.getElementById('naFila').textContent = Math.max(0, dados.proxSenha - dados.senhaAtual);
+            document.getElementById('tempo').textContent = new Date().toLocaleTimeString('pt-BR');
+        }
+
+        function tocarSom() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {}
+        }
+
+        // Sincroniza entre abas
+        window.addEventListener('storage', () => {
+            carregar();
+            atualizar_tela();
+        });
+
+        carregar();
+        atualizar_tela();
+        setInterval(atualizar_tela, 1000);
+    </script>
+</body>
+</html>
