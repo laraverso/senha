@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Senha</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            color: #1565c0;
+            font-size: 14px;
+        }
+
+        .sua-senha {
+            margin-bottom: 30px;
+        }
+
+        .label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .numero-grande {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 80px;
+            font-weight: 900;
+            padding: 40px;
+            border-radius: 20px;
+            letter-spacing: 15px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .info-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-copiar {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-copiar:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-voltar {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-voltar:hover {
+            background: #e0e0e0;
+        }
+
+        .mensagem {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .mensagem.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tempo {
+            font-size: 12px;
+            color: #999;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .numero-grande {
+                font-size: 50px;
+                letter-spacing: 8px;
+            }
+
+            .container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Sua Senha</h1>
+        <p class="subtitle">Você está na fila</p>
+
+        <div class="sua-senha">
+            <div class="label">SUA SENHA</div>
+            <div class="numero-grande" id="minhassenha">000</div>
+            <button class="btn-copiar" onclick="copiarNumero()">📋 Copiar Número</button>
+        </div>
+
+        <div class="status-box">
+            🎯 <strong>Sendo atendido:</strong> <span id="senhaAtual">000</span><br>
+            ⏳ <strong>Sua posição:</strong> <span id="posicao">-</span> na frente
+        </div>
+
+        <div class="info">
+            <div class="info-item">
+                <div class="info-label">Próxima Senha</div>
+                <div class="info-value" id="proxSenha">000</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Hora</div>
+                <div class="info-value" id="hora">--:--</div>
+            </div>
+        </div>
+
+        <button class="btn-copiar" onclick="atualizarPagina()">🔄 Atualizar</button>
+        <button class="btn-voltar" onclick="window.history.back()">← Voltar</button>
+
+        <div class="mensagem" id="mensagem"></div>
+        <div class="tempo" id="tempoAtualizacao"></div>
+    </div>
+
+    <script>
+        // ===== SISTEMA COM LOCALSTORAGE (MESMO DO INDEX.HTML) =====
+        class SistemaPassword {
+            constructor() {
+                this.initDados();
+            }
+
+            initDados() {
+                if (!localStorage.getItem('sistemaSenha')) {
+                    localStorage.setItem('sistemaSenha', JSON.stringify({
+                        proximaSenha: 0,
+                        senhaAtual: 0,
+                        ultimoReset: new Date().toLocaleDateString('pt-BR')
+                    }));
+                }
+            }
+
+            getDados() {
+                return JSON.parse(localStorage.getItem('sistemaSenha') || '{"proximaSenha":0,"senhaAtual":0}');
+            }
+
+            saveDados(dados) {
+                localStorage.setItem('sistemaSenha', JSON.stringify(dados));
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'sistemaSenha',
+                    newValue: JSON.stringify(dados)
+                }));
+            }
+
+            async incrementarProximaSenha() {
+                const dados = this.getDados();
+                dados.proximaSenha++;
+                this.saveDados(dados);
+                return dados.proximaSenha;
+            }
+
+            async obterProximaSenha() {
+                return this.getDados().proximaSenha;
+            }
+
+            async obterSenhaAtual() {
+                return this.getDados().senhaAtual;
+            }
+        }
+
+        const sistema = new SistemaPassword();
+        let minhaSenha = null;
+
+        async function inicializar() {
+            minhaSenha = await sistema.incrementarProximaSenha();
+            atualizarDisplay();
+            setInterval(atualizarDisplay, 2000);
+        }
+
+        async function atualizarDisplay() {
+            const proxSenha = await sistema.obterProximaSenha();
+            const senhaAtual = await sistema.obterSenhaAtual();
+
+            document.getElementById('minhassenha').textContent = String(minhaSenha).padStart(3, '0');
+            document.getElementById('senhaAtual').textContent = String(senhaAtual).padStart(3, '0');
+
+            const posicao = minhaSenha - senhaAtual - 1;
+            document.getElementById('posicao').textContent = posicao > 0 ? posicao : '0';
+
+            document.getElementById('proxSenha').textContent = String(proxSenha).padStart(3, '0');
+
+            const agora = new Date();
+            document.getElementById('hora').textContent = agora.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            document.getElementById('tempoAtualizacao').textContent = 'Atualizado às ' + agora.toLocaleTimeString('pt-BR');
+
+            if (senhaAtual === minhaSenha) {
+                document.querySelector('.status-box').innerHTML = '🎉 <strong>SUA VEZ!</strong> Dirija-se ao atendimento!';
+                document.querySelector('.status-box').style.background = '#d4edda';
+                document.querySelector('.status-box').style.color = '#155724';
+                tocarSomChamada();
+            }
+        }
+
+        function copiarNumero() {
+            const numero = document.getElementById('minhassenha').textContent;
+            navigator.clipboard.writeText(numero);
+            
+            const msg = document.getElementById('mensagem');
+            msg.textContent = '✓ Número copiado: ' + numero;
+            msg.classList.add('show');
+            setTimeout(() => {
+                msg.classList.remove('show');
+            }, 2000);
+        }
+
+        function atualizarPagina() {
+            location.reload();
+        }
+
+        function tocarSomChamada() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const notas = [800, 1000, 800];
+                let tempo = audioContext.currentTime;
+
+                notas.forEach((freq) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.3, tempo);
+                    gain.gain.exponentialRampToValueAtTime(0.01, tempo + 0.3);
+                    osc.start(tempo);
+                    osc.stop(tempo + 0.3);
+                    tempo += 0.35;
+                });
+            } catch (e) {}
+        }
+
+        window.addEventListener('load', inicializar);
+    </script>
+</body>
+</html>
