@@ -419,28 +419,47 @@
     </div>
 
     <script>
-        // Dados compartilhados
-        let dados = {
-            senhaAtual: 0,
-            proxSenha: 0
-        };
-
-        function salvar() {
-            localStorage.setItem('dados', JSON.stringify(dados));
-            window.dispatchEvent(new Event('dadosAtualizados'));
+        // Inicializa dados se não existirem
+        function inicializarDados() {
+            if (!localStorage.getItem('dados')) {
+                localStorage.setItem('dados', JSON.stringify({
+                    senhaAtual: 0,
+                    proxSenha: 0
+                }));
+            }
         }
 
-        function carregar() {
-            const saved = localStorage.getItem('dados');
-            if (saved) dados = JSON.parse(saved);
+        function getDados() {
+            try {
+                const dados = localStorage.getItem('dados');
+                return dados ? JSON.parse(dados) : { senhaAtual: 0, proxSenha: 0 };
+            } catch (e) {
+                return { senhaAtual: 0, proxSenha: 0 };
+            }
+        }
+
+        function salvarDados(dados) {
+            try {
+                localStorage.setItem('dados', JSON.stringify(dados));
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'dados',
+                    newValue: JSON.stringify(dados)
+                }));
+            } catch (e) {
+                console.error('Erro ao salvar:', e);
+            }
         }
 
         function chamarProximo() {
+            const dados = getDados();
             if (dados.proxSenha > dados.senhaAtual) {
                 dados.senhaAtual++;
-                salvar();
+                salvarDados(dados);
                 mostrarMsg('✓ Chamando: ' + String(dados.senhaAtual).padStart(3, '0'));
                 tocarSom();
+                atualizarTela();
+            } else {
+                mostrarMsg('⚠️ Ninguém na fila');
             }
         }
 
@@ -450,19 +469,24 @@
                 mostrarMsg('⚠️ Número inválido');
                 return;
             }
+            const dados = getDados();
             dados.senhaAtual = valor;
+            salvarDados(dados);
             document.getElementById('inputSenha').value = '';
-            salvar();
             mostrarMsg('✓ Atualizado: ' + String(valor).padStart(3, '0'));
+            atualizarTela();
         }
 
         function resetar() {
             if (confirm('Resetar sistema?')) {
                 if (confirm('Tem certeza? Vai zerar tudo!')) {
-                    dados.senhaAtual = 0;
-                    dados.proxSenha = 0;
-                    salvar();
+                    const dados = {
+                        senhaAtual: 0,
+                        proxSenha: 0
+                    };
+                    salvarDados(dados);
                     mostrarMsg('✓ Sistema resetado!');
+                    atualizarTela();
                 }
             }
         }
@@ -474,7 +498,8 @@
             setTimeout(() => msg.classList.remove('show'), 3000);
         }
 
-        function atualizar_tela() {
+        function atualizarTela() {
+            const dados = getDados();
             document.getElementById('senhaAtual').textContent = String(dados.senhaAtual).padStart(3, '0');
             document.getElementById('proxSenha').textContent = String(dados.proxSenha).padStart(3, '0');
             document.getElementById('naFila').textContent = Math.max(0, dados.proxSenha - dados.senhaAtual);
@@ -497,14 +522,16 @@
         }
 
         // Sincroniza entre abas
-        window.addEventListener('storage', () => {
-            carregar();
-            atualizar_tela();
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'dados') {
+                atualizarTela();
+            }
         });
 
-        carregar();
-        atualizar_tela();
-        setInterval(atualizar_tela, 1000);
+        // Inicializa
+        inicializarDados();
+        atualizarTela();
+        setInterval(atualizarTela, 1000);
     </script>
 </body>
 </html>

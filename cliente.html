@@ -50,41 +50,6 @@
             word-break: break-all;
         }
 
-        @media (max-width: 600px) {
-            .numero-grande {
-                font-size: 70px;
-                padding: 40px 20px;
-                letter-spacing: 15px;
-                margin: 20px 0;
-            }
-
-            h1 {
-                font-size: 26px;
-            }
-
-            .container {
-                padding: 30px 20px;
-            }
-
-            .status {
-                font-size: 14px;
-                padding: 15px;
-            }
-
-            .info-value {
-                font-size: 20px;
-            }
-
-            button {
-                padding: 12px;
-                font-size: 13px;
-            }
-
-            .info-label {
-                font-size: 10px;
-            }
-        }
-
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -162,6 +127,41 @@
         .msg.show {
             display: block;
         }
+
+        @media (max-width: 600px) {
+            .numero-grande {
+                font-size: 70px;
+                padding: 40px 20px;
+                letter-spacing: 15px;
+                margin: 20px 0;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .container {
+                padding: 30px 20px;
+            }
+
+            .status {
+                font-size: 14px;
+                padding: 15px;
+            }
+
+            .info-value {
+                font-size: 20px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .info-label {
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -186,7 +186,6 @@
             </div>
         </div>
 
-        <button onclick="copiar()">📋 Copiar</button>
         <button onclick="location.reload()" style="background: #f0f0f0; color: #333;">🔄 Atualizar</button>
 
         <div class="msg" id="msg"></div>
@@ -197,8 +196,12 @@
         let dados = { senhaAtual: 0, proxSenha: 0 };
 
         function carregar() {
-            const saved = localStorage.getItem('dados');
-            if (saved) dados = JSON.parse(saved);
+            try {
+                const saved = localStorage.getItem('dados');
+                if (saved) dados = JSON.parse(saved);
+            } catch (e) {
+                console.error('Erro ao carregar:', e);
+            }
         }
 
         function gerar_senha() {
@@ -226,14 +229,6 @@
                 document.querySelector('.status').style.color = '#155724';
                 tocarSomChamada();
             }
-        }
-
-        function copiar() {
-            navigator.clipboard.writeText(String(meuNumero).padStart(3, '0'));
-            const msg = document.getElementById('msg');
-            msg.textContent = '✓ Número copiado!';
-            msg.classList.add('show');
-            setTimeout(() => msg.classList.remove('show'), 2000);
         }
 
         function tocarSom() {
