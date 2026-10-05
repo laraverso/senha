@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Senha</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .numero-grande {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 100px;
+            font-weight: 900;
+            padding: 50px 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            letter-spacing: 20px;
+            animation: slideUp 0.5s ease;
+            word-break: break-all;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            color: #1565c0;
+            font-size: 16px;
+        }
+
+        .info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .info-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .msg.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .numero-grande {
+                font-size: 70px;
+                padding: 40px 20px;
+                letter-spacing: 15px;
+                margin: 20px 0;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .container {
+                padding: 30px 20px;
+            }
+
+            .status {
+                font-size: 14px;
+                padding: 15px;
+            }
+
+            .info-value {
+                font-size: 20px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .info-label {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Sua Senha</h1>
+        
+        <div class="numero-grande" id="numero">000</div>
+
+        <div class="status">
+            🎯 <strong>Sendo atendido:</strong> <span id="atendendo">000</span><br>
+            ⏳ <strong>Na sua frente:</strong> <span id="posicao">0</span>
+        </div>
+
+        <div class="info">
+            <div class="info-item">
+                <div class="info-label">Próxima</div>
+                <div class="info-value" id="proxima">000</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Hora</div>
+                <div class="info-value" id="hora">--:--</div>
+            </div>
+        </div>
+
+        <button onclick="location.reload()" style="background: #f0f0f0; color: #333;">🔄 Atualizar</button>
+
+        <div class="msg" id="msg"></div>
+    </div>
+
+    <script>
+        let meuNumero = null;
+        let dados = { senhaAtual: 0, proxSenha: 0 };
+
+        function carregar() {
+            try {
+                const saved = localStorage.getItem('dados');
+                if (saved) dados = JSON.parse(saved);
+            } catch (e) {
+                console.error('Erro ao carregar:', e);
+            }
+        }
+
+        function gerar_senha() {
+            dados.proxSenha++;
+            localStorage.setItem('dados', JSON.stringify(dados));
+            meuNumero = dados.proxSenha;
+            localStorage.setItem('meuNumero', meuNumero);
+            atualizar_tela();
+            tocarSom();
+        }
+
+        function atualizar_tela() {
+            document.getElementById('numero').textContent = String(meuNumero).padStart(3, '0');
+            document.getElementById('atendendo').textContent = String(dados.senhaAtual).padStart(3, '0');
+            
+            const posicao = meuNumero - dados.senhaAtual - 1;
+            document.getElementById('posicao').textContent = posicao > 0 ? posicao : '0';
+            
+            document.getElementById('proxima').textContent = String(dados.proxSenha).padStart(3, '0');
+            document.getElementById('hora').textContent = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+
+            if (dados.senhaAtual === meuNumero) {
+                document.querySelector('.status').innerHTML = '🎉 <strong>SUA VEZ!</strong> Dirija-se ao atendimento!';
+                document.querySelector('.status').style.background = '#d4edda';
+                document.querySelector('.status').style.color = '#155724';
+                tocarSomChamada();
+            }
+        }
+
+        function tocarSom() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {}
+        }
+
+        function tocarSomChamada() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                [800, 1000, 800].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = freq;
+                    const tempo = ctx.currentTime + (i * 0.35);
+                    gain.gain.setValueAtTime(0.3, tempo);
+                    gain.gain.exponentialRampToValueAtTime(0.01, tempo + 0.3);
+                    osc.start(tempo);
+                    osc.stop(tempo + 0.3);
+                });
+            } catch (e) {}
+        }
+
+        window.addEventListener('storage', () => {
+            carregar();
+            atualizar_tela();
+        });
+
+        carregar();
+        const saved = localStorage.getItem('meuNumero');
+        if (saved) {
+            meuNumero = parseInt(saved);
+        } else {
+            gerar_senha();
+        }
+        atualizar_tela();
+        setInterval(() => {
+            carregar();
+            atualizar_tela();
+        }, 1000);
+    </script>
+</body>
+</html>
